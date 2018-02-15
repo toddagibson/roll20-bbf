@@ -1,0 +1,27 @@
+.sheet-fixed  {
+    font-family: monospace;
+    white-space: pre;
+}
+
+.sheet-instructions {
+    color: green;
+    font-weight: bold;
+}
+
+
+.sheet-bold {
+    font-weight: bold;
+}
+
+.sheet-header {
+    width: 100%;
+    background-color: #014A89;
+    color: white;
+    border: 5px solid #014A89;
+    font-size: 14px;
+    text-align: left;
+}
+
+.sheet-bodycontainer {
+    margin-bottom: 10px;
+}

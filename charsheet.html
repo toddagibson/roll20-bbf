@@ -1,0 +1,636 @@
+
+<script type="text/worker">
+
+on("change:wsrace change:wswil change:wslog change:wsdex change:wsstr", function() {
+  getAttrs(["wsstr","wsdex","wslog","wswil","wsrace"], function(values) {
+
+    if(values.wsrace=="Dwarf")
+    {
+      setAttrs({str: parseInt(values.wsstr)+10});
+      setAttrs({str_max: parseInt(values.wsstr)+10});
+      setAttrs({move: 6});
+    }
+    else
+    {
+      setAttrs({str: parseInt(values.wsstr)});
+      setAttrs({str_max: parseInt(values.wsstr)});
+    }
+
+    if(values.wsrace=="Halfling")
+    {
+      setAttrs({dex: parseInt(values.wsdex)+10});
+      setAttrs({dex_max: parseInt(values.wsdex)+10});
+      setAttrs({move: 7});
+    }
+    else
+    {
+      setAttrs({dex: parseInt(values.wsdex)});
+      setAttrs({dex_max: parseInt(values.wsdex)});
+    }
+
+    if(values.wsrace=="Elf")
+    {
+      setAttrs({log: parseInt(values.wslog)+10});
+      setAttrs({log_max: parseInt(values.wslog)+10});
+      setAttrs({move: 9});
+    }
+    else
+    {
+      setAttrs({log: parseInt(values.wslog)});
+      setAttrs({log_max: parseInt(values.wslog)});
+    }
+
+    if(values.wsrace=="Human")
+    {
+      setAttrs({wil: parseInt(values.wswil)+10});
+      setAttrs({wil_max: parseInt(values.wswil)+10});
+      setAttrs({move: 8});
+    }
+    else
+    {
+      setAttrs({wil: parseInt(values.wswil)});
+      setAttrs({wil_max: parseInt(values.wswil)});
+    }
+
+  });
+});
+
+on("change:clericlvl change:elementalistlvl change:enchanterlvl change:leaderlvl change:scholarlvl change:spellcasterlvl change:scoutlvl change:thieflvl change:warriorlvl change:wsprimary change:wssecondary change:wil change:log change:dex change:str", function() {
+  getAttrs(["clericlvl","elementalistlvl", "enchanterlvl","leaderlvl","scholarlvl","spellcasterlvl","scoutlvl","thieflvl","warriorlvl","wil","log","dex","str","wsprimary","wssecondary"],
+function(values)
+{
+
+  //calculate Rank
+  var current_rank=0;
+  var levels = [parseInt(values.clericlvl),parseInt(values.elementalistlvl),parseInt(values.enchanterlvl),parseInt(values.leaderlvl),parseInt(values.scholarlvl),parseInt(values.spellcasterlvl),parseInt(values.scoutlvl),parseInt(values.thieflvl),parseInt(values.warriorlvl)];
+  levels.sort(function(a, b){return b-a});
+  var abilities=[parseInt(values.wil),parseInt(values.log),parseInt(values.dex),parseInt(values.str)];
+  abilities.sort(function(a, b){return b-a});
+  switch(levels[0])
+  {
+    case 2:
+    case 3:
+      current_rank+=1;
+      break;
+    case 4:
+    case 5:
+      current_rank+=2;
+      break;
+    case 6:
+      current_rank+=3;
+      break;
+  }
+  switch(levels[1])
+  {
+    case 3:
+    case 4:
+    case 5:
+      current_rank+=1;
+      break;
+    case 6:
+      current_rank+=2;
+      break;
+  }
+  if(abilities[0] >= 50 && abilities[0] <= 99)
+  {
+    current_rank+=1;
+  }
+  if(abilities[0] >= 100)
+  {
+    current_rank+=2;
+  }
+  setAttrs({rank: current_rank});
+
+
+  var score;
+  var formula;
+  //
+  // cleric
+  //
+  formula= values.wil+"/2 + " + values.clericlvl + "X10 ";
+  score=Math.ceil(parseInt(values.wil)/2);
+  score+=10*parseInt(values.clericlvl);
+
+  if(values.wsprimary=="cleric")
+  {
+    formula+="+ 20 ";
+    score+=20;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(values.wssecondary=="cleric" && values.wsprimary != "cleric")
+  {
+    formula+="+ 10 ";
+    score+=10;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(parseInt(values.clericlvl)>0)
+  {
+    setAttrs({clericformula: formula});
+    setAttrs({clericscore: score});
+  }
+  else //no unskilled clerics
+  {
+      setAttrs({clericscore: "0"});
+      setAttrs({clericformula: "(Level > 0 required to use skill)"});
+  }
+
+  //
+  // elementalist
+  //
+  formula= values.log+"/2 + " + values.elementalistlvl + "X10 ";
+  score=Math.ceil(parseInt(values.log)/2);
+  score+=10*parseInt(values.elementalistlvl);
+
+  if(values.wsprimary=="elementalist")
+  {
+    formula+="+ 20 ";
+    score+=20;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(values.wssecondary=="elementalist" && values.wsprimary != "elementalist")
+  {
+    formula+="+ 10 ";
+    score+=10;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(parseInt(values.elementalistlvl)>0)
+  {
+    setAttrs({elementalistformula: formula});
+    setAttrs({elementalistscore: score});
+  }
+  else //no unskilled elementalists
+  {
+      setAttrs({elementalistscore: "0"});
+      setAttrs({elementalistformula: "(Level > 0 required to use skill)"});
+  }
+
+  //
+  // enchanter
+  //
+  formula= values.log+"/2 + " + values.enchanterlvl + "X10 ";
+  score=Math.ceil(parseInt(values.log)/2);
+  score+=10*parseInt(values.enchanterlvl);
+
+  if(values.wsprimary=="enchanter")
+  {
+    formula+="+ 20 ";
+    score+=20;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(values.wssecondary=="enchanter" && values.wsprimary != "enchanter")
+  {
+    formula+="+ 10 ";
+    score+=10;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(parseInt(values.enchanterlvl)>0)
+  {
+    setAttrs({enchanterformula: formula});
+    setAttrs({enchanterscore: score});
+  }
+  else //no unskilled enchanters
+  {
+      setAttrs({enchanterscore: "0"});
+      setAttrs({enchanterformula: "(Level > 0 required to use skill)"});
+  }
+
+  //
+  // leader
+  //
+  formula= values.wil+"/2 + " + values.leaderlvl + "X10 ";
+  score=Math.ceil(parseInt(values.wil)/2);
+  score+=10*parseInt(values.leaderlvl);
+
+  if(values.wsprimary=="leader")
+  {
+    formula+="+ 20 ";
+    score+=20;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(values.wssecondary=="leader" && values.wsprimary != "leader")
+  {
+    formula+="+ 10 ";
+    score+=10;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(parseInt(values.leaderlvl)>0)
+  {
+    setAttrs({leaderformula: formula});
+    setAttrs({leaderscore: score});
+  }
+  else //no unskilled leaders
+  {
+      setAttrs({leaderscore: "0"});
+      setAttrs({leaderformula: "(Level > 0 required to use skill)"});
+  }
+
+  //
+  // scholar
+  //
+  formula= values.log+"/2 + " + values.scholarlvl + "X10 ";
+  score=Math.ceil(parseInt(values.log)/2);
+  score+=10*parseInt(values.scholarlvl);
+
+  if(values.wsprimary=="scholar")
+  {
+    formula+="+ 20 ";
+    score+=20;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(values.wssecondary=="scholar" && values.wsprimary != "scholar")
+  {
+    formula+="+ 10 ";
+    score+=10;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(parseInt(values.scholarlvl)>0)
+  {
+    setAttrs({scholarformula: formula});
+    setAttrs({scholarscore: score});
+  }
+  else //no unskilled scholars
+  {
+      setAttrs({scholarscore: "0"});
+      setAttrs({scholarformula: "(Level > 0 required to use skill)"});
+  }
+
+  //
+  // spellcaster
+  //
+  formula= values.log+"/2 + " + values.spellcasterlvl + "X10 ";
+  score=Math.ceil(parseInt(values.log)/2);
+  score+=10*parseInt(values.spellcasterlvl);
+
+  if(values.wsprimary=="spellcaster")
+  {
+    formula+="+ 20 ";
+    score+=20;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(values.wssecondary=="spellcaster" && values.wsprimary != "spellcaster")
+  {
+    formula+="+ 10 ";
+    score+=10;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(parseInt(values.spellcasterlvl)>0)
+  {
+    setAttrs({spellcasterformula: formula});
+    setAttrs({spellcasterscore: score});
+  }
+  else //no unskilled spellcasters
+  {
+      setAttrs({spellcasterscore: "0"});
+      setAttrs({spellcasterformula: "(Level > 0 required to use skill)"});
+  }
+
+  //
+  // scout
+  //
+  formula= values.log+"/2 + " + values.scoutlvl + "X10 ";
+  score=Math.ceil(parseInt(values.log)/2);
+  score+=10*parseInt(values.scoutlvl);
+
+  if(values.wsprimary=="scout")
+  {
+    formula+="+ 20 ";
+    score+=20;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(values.wssecondary=="scout" && values.wsprimary != "scout")
+  {
+    formula+="+ 10 ";
+    score+=10;
+  }
+  else
+  {
+    formula+="     ";
+  }
+
+  //Unskilled scout OK
+  setAttrs({scoutformula: formula});
+  setAttrs({scoutscore: score});
+
+  //
+  // thief
+  //
+  formula= values.dex+"/2 + " + values.thieflvl + "X10 ";
+  score=Math.ceil(parseInt(values.dex)/2);
+  score+=10*parseInt(values.thieflvl);
+
+  if(values.wsprimary=="thief")
+  {
+    formula+="+ 20 ";
+    score+=20;
+  }
+  else
+  {
+    formula+="     ";
+  }
+  if(values.wssecondary=="thief" && values.wsprimary != "thief")
+  {
+    formula+="+ 10 ";
+    score+=10;
+  }
+  else
+  {
+    formula+="     ";
+  }
+
+  //Unskilled thief OK
+  setAttrs({thiefformula: formula});
+  setAttrs({thiefscore: score});
+
+  //
+  // warrior
+  //
+  meleeformula= values.str+"/2 + " + values.warriorlvl + "X10 ";
+  rangedformula= values.dex+"/2 + " + values.warriorlvl + "X10 ";
+  meleescore=Math.ceil(parseInt(values.str)/2);
+  rangedscore=Math.ceil(parseInt(values.dex)/2);
+  meleescore+=10*parseInt(values.warriorlvl);
+  rangedscore+=10*parseInt(values.warriorlvl);
+
+  if(values.wsprimary=="warrior")
+  {
+    meleeformula+="+ 20 ";
+    rangedformula+="+ 20 ";
+    meleescore+=20;
+    rangedscore+=20;
+  }
+  else
+  {
+    meleeformula+="     ";
+    rangedformula+="     ";
+  }
+  if(values.wssecondary=="warrior" && values.wsprimary != "warrior")
+  {
+    meleeformula+="+ 10 ";
+    rangedformula+="+ 10 ";
+    meleescore+=10;
+    rangedscore+=10;
+  }
+  else
+  {
+    meleeformula+="     ";
+    rangedformula+="     ";
+  }
+
+  //Unskilled Warrior OK
+  setAttrs({warriormeleeformula: meleeformula});
+  setAttrs({warriorrangedformula: rangedformula});
+  setAttrs({warriormeleescore: meleescore});
+  setAttrs({warriorrangedscore: rangedscore});
+
+} 
+);});
+
+on("change:str change:dex", function() {
+  getAttrs(["str","dex"], function(values) {
+  var body=
+  setAttrs({bp_max: Math.ceil(parseInt(values.str)/2)});
+  setAttrs({bp:     Math.ceil(parseInt(values.str)/2)});
+  var mb=(parseInt(values.str)>= 60) ? Math.floor((parseInt(values.str)-55)/5) : 0;
+  var rb=(parseInt(values.dex)>= 60) ? Math.floor((parseInt(values.dex)-55)/5) : 0;
+  mb = "+" + mb;
+  rb = "+" + rb;
+  setAttrs({meleebonus: mb});
+  setAttrs({rangedbonus: rb});
+  });
+});
+
+on("change:log change:dex", function() {
+  getAttrs(["log", "dex"], function(values) {
+  var initiative=1;
+  initiative=(parseInt(values.log) >= 65) ? initiative+1 : initiative;
+  initiative=(parseInt(values.dex) >= 65) ? initiative+1 : initiative;
+  setAttrs({init: initiative});
+  });
+});
+
+</script>
+
+<span style="color:red;">Scroll down to Worksheet to build your character</span>
+<h2>BareBones Fantasy Character Sheet</h2>
+<div class="bodycontainer">
+  <div class="header">Principal Data</div>
+<table width="80%"><tr><td><table>
+    <tr><td>Character name</td><td><input type="text" name="attr_charname"/></td></tr>
+    <tr><td>Descriptors</td><td><input type="text" size="5" name="attr_descriptors"/></td></tr>
+    <tr><td>Race</td><td><span name="attr_wsrace"></span></td></tr>
+    <tr><td><strong>Body Points (curr/max)</strong></td><td><input type="number" name="attr_bp" value="0"/>/<span class="bold" name="attr_bp_max">0</span></td></tr>
+    <tr><td><strong>Damage Reduction</strong></td><td><input type="number" name="attr_dr" value="0"/></td></tr>
+</table>
+</td>
+<td valign="top" align="right">
+<table>
+    <tr><td>Dev. Pts. (spent/earned)</td><td><input type="number" name="attr_dpspent"/>/<input type="number" name="attr_dpearned"/></td></tr>
+  <tr><td>Rank</td><td><span name="attr_rank">0</span></td></tr>
+    <tr><td>Initiative</td><td><span name="attr_init">0</span></td></tr>
+    <tr><td>Move</td><td><span name="attr_move">0</span></td></tr>
+
+</table>
+</td>
+</tr></table>
+</div>
+<br/>
+<div class="bodycontainer">
+  <div class="header">Abilities</div>
+<table cellpadding="2">
+  <tr><td>STR</td><td><span name="attr_str">0</span><strong>&nbsp;/&nbsp;<span name="attr_str_max">0</span></strong></td></tr>
+  <tr><td>DEX</td><td><span name="attr_dex">0</span><strong>&nbsp;/&nbsp;<span name="attr_dex_max">0</span></strong></td></tr>
+  <tr><td>LOG</td><td><span name="attr_log">0</span><strong>&nbsp;/&nbsp;<span name="attr_log_max">0</span></strong></td></tr>
+  <tr><td>WIL</td><td><span name="attr_wil">0</span><strong>&nbsp;/&nbsp;<span name="attr_wil_max">0</span></strong></td></tr>
+</table>
+</div>
+<br/>
+<div class="bodycontainer">
+  <div class="header">Skills</div>
+<table>
+  <tr><th>Score</th><th>Skill</th><th>Ability</th><th>Level</th><th>&nbsp;&nbsp;= Ability/2 + LevelX10 + primary + secondary</th></tr>
+    <tr>
+      <td><span name="attr_clericscore" class="bold">0</span></td>
+      <td>Cleric</td><td>WIL</td>
+      <td><span name="attr_clericlvl">0</span></td>
+      <td><span name="attr_clericformula" class="fixed">0</span></td></tr>
+    <tr>
+      <td><span name="attr_elementalistscore" class="bold">0</span></td>
+      <td>Elementalist</td><td>WIL</td>
+      <td><span name="attr_elementalistlvl">0</span></td>
+      <td><span name="attr_elementalistformula" class="fixed">0</span></td></tr>
+    <tr>
+      <td><span name="attr_enchanterscore" class="bold">0</span></td>
+      <td>Enchanter</td><td>LOG</td>
+      <td><span name="attr_enchanterlvl">0</span></td>
+      <td><span name="attr_enchanterformula" class="fixed">0</span></td></tr>
+    <tr>
+      <td><span name="attr_leaderscore" class="bold">0</span></td>
+      <td>Leader</td><td>WIL</td>
+      <td><span name="attr_leaderlvl">0</span></td>
+      <td><span name="attr_leaderformula" class="fixed">0</span></td></tr>
+    <tr>
+      <td><span name="attr_scholarscore" class="bold">0</span></td>
+      <td>Scholar</td><td>LOG</td>
+      <td><span name="attr_scholarlvl">0</span></td>
+      <td><span name="attr_scholarformula" class="fixed">0</span></td></tr>
+    <tr>
+      <td><span name="attr_spellcasterscore" class="bold">0</span></td>
+      <td>Spellcaster</td><td>LOG</td>
+      <td><span name="attr_spellcasterlvl">0</span></td>
+      <td><span name="attr_spellcasterformula" class="fixed">0</span></td></tr>
+    <tr>
+      <td><span name="attr_scoutscore" class="bold">0</span></td>
+      <td>Scout</td><td>LOG</td>
+      <td><span name="attr_scoutlvl">0</span></td>
+      <td><span name="attr_scoutformula" class="fixed">0</span></td></tr>
+    <tr>
+      <td><span name="attr_thiefscore" class="bold">0</span></td>
+      <td>Thief</td><td>DEX</td>
+      <td><span name="attr_thieflvl">0</span></td>
+      <td><span name="attr_thiefformula" class="fixed">0</span></td></tr>
+    <tr>
+      <td><span name="attr_warriormeleescore" class="bold">0</span><br/><span name="attr_warriorrangedscore" class="bold">0</span></td>
+      <td>Warrior (melee)<br/>Warrior (ranged)</td><td>STR<br/>DEX</td>
+      <td><span name="attr_warriorlvl">0</span></td>
+      <td><span name="attr_warriormeleeformula" class="fixed">0</span><br/><span name="attr_warriorrangedformula" class="fixed">0</span></td></tr>
+</table>
+</div>
+
+<div class="bodycontainer">
+  <div class="header">Weapons&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Damage Bonus: <span name="attr_meleebonus">0</span>/<span name="attr_rangedbonus">0</span> (melee/ranged)</div>
+  <textarea name="attr_weapons" style="height:55px;">Name, Type, Subtype, Hands, Range STR, Qualities</textarea>
+</div>
+
+<div class="bodycontainer">
+  <div class="header">Equipment</div>
+  <textarea name="attr_equipment" style="height:205px;"></textarea>
+</div>
+
+<hr/>
+
+<h2>Worksheet</h2>
+<h3>Abilites</h3>
+<ol start="1" class="instructions">
+  <li>Use one of the following methods to score your abilities:
+  <ol style="list-style-type:upper-alpha;">
+    <li>Assign 50, 55, 60, and 65 to the four abilities in any order you prefer.</li>
+    <li>For each ability roll 5D10 and add 30.</li>
+  </ol>
+  </li>
+</ol>
+<table cellpadding="2">
+  <tr><td>STR</td><td><input type="number" name="attr_wsstr" value="0"/> Used with: Warrior (melee).</td><td>Dwarves receive +10 bonus.</td></tr>
+  <tr><td>DEX</td><td><input type="number" name="attr_wsdex" value="0"/> Used with: Thief, Warrior (ranged).</td><td>Halflings receive +10 bonus.</td></tr>
+  <tr><td>LOG</td><td><input type="number" name="attr_wslog" value="0"/> Used with: Enchanter, Scholar, Scout, Spellcaster.</td><td>Elves receive +10 bonus.</td></tr>
+  <tr><td>WIL</td><td><input type="number" name="attr_wswil" value="0"/> Used with: Cleric, Leader, Elementalist.</td><td>Humans receive +10 bonus.</td></tr>
+</table>
+<p>
+<ol start="2" class="instructions">
+  <li>Select a race.</li>
+</ol>
+<table>
+  <tr><th>Race: &nbsp;&nbsp;</th><td>
+      <input type="radio" name="attr_wsrace" value="Dwarf"/> Dwarf&nbsp;
+      <input type="radio" name="attr_wsrace" value="Halfling"/> Halfling&nbsp;
+      <input type="radio" name="attr_wsrace" value="Elf"/> Elf&nbsp;
+      <input type="radio" name="attr_wsrace" value="Human"/> Human
+    </td></tr>
+</table>
+</p>
+
+<h3>Skills (worksheet)</h3>
+<div class="instructions">
+The effect each selection has on skill scores can be seen on the top half of the character sheet.
+<ol start="3">
+  <li>Decide on your character's starting skill and assign it a level of 1.</li>
+  <li>Select a primary skill (typically, but not always your starting skill).</li>
+  <li>Select a secondary skill. Must be different from the primary skill.</li>
+</ol>
+</div>
+<table>
+    <tr><th>Skill</th><th>Ability</th><th colspan="2">Level</th><th>Pri</th><th>&nbsp;&nbsp;Sec</th><th>Notes</th></tr>
+
+    <tr><td>Cleric</td><td>WIL/2</td>
+      <td><input type="number" name="attr_clericlvl" value="0"/></td><td> X 10 + </td>
+    <td><input type="radio" name="attr_wsprimary" value="cleric"/>(+20)</td><td>&nbsp;&nbsp;<input type="radio" name="attr_wssecondary" value="cleric"/>(+10)</td>
+    <td>Blessings, Detect Aura, Miracles, Smite</td></tr>
+
+    <tr><td>Elementalist</td><td>LOG/2</td>
+      <td><input type="number" name="attr_elementalistlvl" value="0"/></td><td> X 10 + </td>
+    <td><input type="radio" name="attr_wsprimary" value="elementalist"/>(+20)</td><td>&nbsp;&nbsp;<input type="radio" name="attr_wssecondary" value="elementalist"/>(+10)</td>
+    <td>Alchemy, Enchantment, Runecraft, Familiar</td></tr>
+
+    <tr><td>Enchanter</td><td>LOG/2</td>
+      <td><input type="number" name="attr_enchanterlvl" value="0"/></td><td> X 10 + </td>
+    <td><input type="radio" name="attr_wsprimary" value="enchanter"/>(+20)</td><td>&nbsp;&nbsp;<input type="radio" name="attr_wssecondary" value="enchanter"/>(+10)</td>
+    <td>Alchemy, Enchantment, Runecraft, Familiar</td></tr>
+
+    <tr><td>Leader</td><td>WIL/2</td>
+      <td><input type="number" name="attr_leaderlvl" value="0"/></td><td> X 10 + </td>
+    <td><input type="radio" name="attr_wsprimary" value="leader"/>(+20)</td><td>&nbsp;&nbsp;<input type="radio" name="attr_wssecondary" value="leader"/>(+10)</td>
+    <td>Battle Commander, Guardian, Leader, Warlord</td></tr>
+
+    <tr><td>Scholar</td><td>LOG/2</td>
+      <td><input type="number" name="attr_scholarlvl" value="0"/></td><td> X 10 + </td>
+    <td><input type="radio" name="attr_wsprimary" value="scholar"/>(+20)</td><td>&nbsp;&nbsp;<input type="radio" name="attr_wssecondary" value="scholar"/>(+10)</td>
+    <td>Diplomat, High Scholar, Historian, Signs &amp; Portents</td></tr>
+
+    <tr><td>Spellcaster</td><td>LOG/2</td>
+      <td><input type="number" name="attr_spellcasterlvl" value="0"/></td><td> X 10 + </td>
+    <td><input type="radio" name="attr_wsprimary" value="spellcaster"/>(+20)</td><td>&nbsp;&nbsp;<input type="radio" name="attr_wssecondary" value="spellcaster"/>(+10)</td>
+    <td>High Wizardry, Low Wizardry, Wizard Eye, Wizard Hand</td></tr>
+
+    <tr><td>Scout</td><td>LOG/2</td>
+      <td><input type="number" name="attr_scoutlvl" value="0"/></td><td> X 10 + </td>
+    <td><input type="radio" name="attr_wsprimary" value="scout"/>(+20)</td><td>&nbsp;&nbsp;<input type="radio" name="attr_wssecondary" value="scout"/>(+10)</td>
+    <td>Animal Handling, Navigation, Survival, Tracking</td></tr>
+
+    <tr><td>Thief</td><td>LOG/2</td>
+      <td><input type="number" name="attr_thieflvl" value="0"/></td><td> X 10 + </td>
+    <td><input type="radio" name="attr_wsprimary" value="thief"/>(+20)</td><td>&nbsp;&nbsp;<input type="radio" name="attr_wssecondary" value="thief"/>(+10)</td>
+    <td>Deception, Security Systems, Sleight of Hand, Stealth</td></tr>
+
+    <tr><td>Warrior</td><td>(melee) STR/2<br/>(ranged) DEX/2</td>
+      <td><input type="number" name="attr_warriorlvl" value="0"/></td><td> X 10 + </td>
+    <td><input type="radio" name="attr_wsprimary" value="warrior"/>(+20)</td><td>&nbsp;&nbsp;<input type="radio" name="attr_wssecondary" value="warrior"/>(+10)</td>
+    <td>Melee, Unarmed combat<br/>Marksman, Thrown weapons</td></tr>
+</table>
